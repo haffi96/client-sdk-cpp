@@ -116,6 +116,22 @@ target_link_libraries(SimpleDataStream
     livekit
 )
 
+add_executable(PublishH264TcpSource
+  publish_h264_tcp_source/main.cpp
+  publish_h264_tcp_source/h264_tcp_source.cpp
+  publish_h264_tcp_source/h264_tcp_source.h
+)
+
+target_include_directories(PublishH264TcpSource PRIVATE
+  ${EXAMPLES_PRIVATE_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/publish_h264_tcp_source
+)
+
+target_link_libraries(PublishH264TcpSource
+  PRIVATE
+    livekit
+)
+
 add_custom_command(
   TARGET SimpleDataStream
   POST_BUILD
@@ -135,7 +151,7 @@ if(WIN32)
   )
   
   # Copy DLLs to each example's output directory
-  foreach(EXAMPLE SimpleRoom SimpleRpc SimpleDataStream)
+  foreach(EXAMPLE SimpleRoom SimpleRpc SimpleDataStream PublishH264TcpSource)
     foreach(DLL ${REQUIRED_DLLS})
       add_custom_command(TARGET ${EXAMPLE} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -159,7 +175,7 @@ if(UNIX)
   endif()
   
   # Copy shared library to each example's output directory
-  foreach(EXAMPLE SimpleRoom SimpleRpc SimpleDataStream)
+  foreach(EXAMPLE SimpleRoom SimpleRpc SimpleDataStream PublishH264TcpSource)
     add_custom_command(TARGET ${EXAMPLE} POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_if_different
               "${LIVEKIT_LIB_DIR}/${FFI_SHARED_LIB}"

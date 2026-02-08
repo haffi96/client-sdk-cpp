@@ -18,6 +18,7 @@
 
 #include "ffi.pb.h"
 #include "ffi_client.h"
+#include "livekit/encoded_video_source.h"
 #include "livekit/video_source.h"
 #include "track.pb.h"
 #include "track_proto_converter.h"
@@ -33,6 +34,21 @@ LocalVideoTrack::LocalVideoTrack(FfiHandle handle,
 
 std::shared_ptr<LocalVideoTrack> LocalVideoTrack::createLocalVideoTrack(
     const std::string &name, const std::shared_ptr<VideoSource> &source) {
+  proto::FfiRequest req;
+  auto *msg = req.mutable_create_video_track();
+  msg->set_name(name);
+  msg->set_source_handle(static_cast<uint64_t>(source->ffi_handle_id()));
+
+  proto::FfiResponse resp = FfiClient::instance().sendRequest(req);
+  const proto::OwnedTrack &owned = resp.create_video_track().track();
+  FfiHandle handle(static_cast<uintptr_t>(owned.handle().id()));
+  return std::shared_ptr<LocalVideoTrack>(
+      new LocalVideoTrack(std::move(handle), owned));
+}
+
+std::shared_ptr<LocalVideoTrack> LocalVideoTrack::createLocalVideoTrack(
+    const std::string &name,
+    const std::shared_ptr<EncodedVideoSource> &source) {
   proto::FfiRequest req;
   auto *msg = req.mutable_create_video_track();
   msg->set_name(name);
